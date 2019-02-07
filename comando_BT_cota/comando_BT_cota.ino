@@ -23,7 +23,7 @@ void setup() {
   HC06.begin(9600);
   one.spiConnect(SSPIN);
   one.obstacleEmitters(ON);
-  one.lcd1("ENTA#CPROB");
+  one.lcd1("   ENTA#CPROB");
   one.stop();
 }
 
@@ -34,7 +34,7 @@ void loop()
     dados = Serial.readString();
     HC06.print("String recebida:");
     HC06.println(dados);
-    one.lcd1("ENTA#CPROB");
+    one.lcd1("   ENTA#CPROB");
     one.lcd2(dados);
   }
   if(dados!="")
