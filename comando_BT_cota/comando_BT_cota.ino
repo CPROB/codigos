@@ -158,8 +158,8 @@ void inverterSentido()
   if(frente==1)
   {
     one.stop();
-    one.move(50,-50);
-    delay(500);
+    one.move(40,-40);
+    delay(600);
     Serial.println("Comando validado!");
     Serial.print("Sentido invertido");  
     tone(9,2000,500);
@@ -197,9 +197,9 @@ void virarDireita()
       Serial.print("Direita ");
       delay(500);
       tone(9,2000,500);
-      one.move(vel,vel);
-      Serial.print("Em frente velocidade ");
-      Serial.println(vel);
+      one.move(-vel,-vel);
+      Serial.print("Recua velocidade ");
+      Serial.println(-vel);
     }
 }
 
@@ -223,9 +223,9 @@ void virarEsquerda()
       Serial.print("Direita ");
       delay(500);
       tone(9,2000,500);
-      one.move(vel,vel);
-      Serial.print("Em frente velocidade ");
-      Serial.println(vel);
+      one.move(-vel,-vel);
+      Serial.print("Recua velocidade ");
+      Serial.println(-vel);
    } 
 }
 
