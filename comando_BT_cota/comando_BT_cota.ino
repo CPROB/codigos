@@ -5,109 +5,84 @@
 
 BnrOneA one;
 
-SoftwareSerial HC06(0,1); //RX, TX
-
 #define led 5
 #define SSPIN 2
 
-boolean validaDados(String dados);
+boolean validaDados(String);
 boolean readObstSensors();
-char getComando(String dados);
-int getVelocidade(String dados);
+char getComando(String);
+int getVelocidade(String);
+void moverFrente(String);
+void moverTras(String);
+void inverterSentido();
+void parar();
+void virarDireita();
+void virarEsquerda();
 
+int vel=0;
+boolean frente=false;
+boolean recua=false;
+int bloqueio=0;
 
 void setup() {
 
   pinMode(led, OUTPUT);
   Serial.begin(9600);
-  HC06.begin(9600);
+  //HC06.begin(9600);
   one.spiConnect(SSPIN);
   one.obstacleEmitters(ON);
-  one.lcd1("ENTA#CPROB");
+  one.lcd1("   ENTA#CPROB");
+  one.lcd2("                ");
   one.stop();
 }
 
 void loop() 
 {
   String dados = "";
-  while (HC06.available()) {
+  while (Serial.available()) {
     dados = Serial.readString();
-    HC06.print("String recebida:");
-    HC06.println(dados);
-    one.lcd1("ENTA#CPROB");
-    one.lcd2(dados);
+    Serial.print("Comando recebido:");
+    Serial.println(dados);
   }
   if(dados!="")
   {
     if(validaDados(dados)==true)
     {
-      HC06.println("String validada!");
-      HC06.println(getComando(dados));
-      HC06.println(getVelocidade(dados));
+      switch(getComando(dados))
+      {
+        case 'F':
+          moverFrente(dados);
+          break;
+        case 'B':
+          moverTras(dados);
+          break;
+      case 'S':
+          parar();
+          break;
+      case 'R':
+          virarDireita();
+          break;
+      case 'L':
+          virarEsquerda();
+          break;     
+      case 'I':
+          inverterSentido();
+          break;
+      }
     }
-    else 
-      HC06.println("String invalida!");
+    else
+    {
+      Serial.println("Comando invalido!");
+      tone(9,1500,1000);
+    }
   }
-  
-  /*String comando = (String) dados.charAt(0) + (String) dados.charAt(1);
-  char cmd = dados.charAt(0);
-  char space = dados.charAt(1);
-  String vel = (String) dados.charAt(2) + (String) dados.charAt(3);
-  int newVel = vel.toInt();
-
-
-  int spd = 0;
-
-  if (command.charAt(0) == 'M' && command.charAt(1) == ' ') {
-    spd = dados.charAt(2) + dados.charAt(3);
-    Serial.println(dados);
-  }
-
-  if (cmd == 'L' && space == ' ') {
-    one.lcd1("V: " + String(newVel));
-    one.move(newVel, newVel);
-
-  }
-  else if (cmd == 'L' && space == '-') {
-    newVel *= -1;
-    one.lcd1("V: " + String(newVel));
-    one.move(newVel, newVel);
-  }
-
-  if (cmd == 'L' && space != ' ') {
-    Serial.println("Comando inválido!");
-  }
-  if (cmd == 'R' && space == ' ') {
-    one.lcd1("V: " + String(newVel));
-    one.move(newVel, -newVel);
-
-  } else if (cmd == 'R' && space == '-') {
-    one.lcd1("V: " + String(newVel));
-    one.move(-newVel, newVel);
-  }
-
-  if (cmd == 'T' && space == ' ') {
-    String freq = (String) dados.charAt(2) + (String) dados.charAt(3) + (String) dados.charAt(4) + (String) dados.charAt(5);
-    tone(9, freq.toInt(), toneDuration.toInt()); // T 200 //2345
-    Serial.println("T: " + freq + " " + toneDuration);
-  }
-
-  if (cmd == 'D' && space == ' ') {
-    toneDuration =
-      (String)dados.charAt(2) +
-      (String)dados.charAt(3) +
-      (String) dados.charAt(4) +
-      (String)dados.charAt(5);
-    Serial.println("Duration set to: " + toneDuration);
-  }
-}*/
 }
 /****************************************************************/
 boolean validaDados(String dados)
 {
   int valida=false;
-  char comandos[6] = {'F','B','S','L','R'};
-  for (int i=0;i<5;i++)
+  char comandos[6] = {'F','B','S','L','R', 'I'};
+  for (int i=0;i<6;i++)
   {
     if(dados.charAt(0)==comandos[i] && dados)
       valida=true;
@@ -148,3 +123,109 @@ boolean readObstSensors()
       break;
   }
 }
+
+void moverFrente(String dados)
+{
+  if(bloqueio==0)
+  {
+    frente=true;
+    recua=false;
+    digitalWrite(led,HIGH);
+    tone(9,2000,500);
+    one.move(getVelocidade(dados),getVelocidade(dados));
+    Serial.println("Comando valido!");
+    Serial.print("Em frente velocidade ");
+    Serial.println(getVelocidade(dados));
+    vel=getVelocidade(dados);
+  }
+}
+
+void moverTras(String dados)
+{
+  frente=false;
+  recua=true;
+  digitalWrite(led,HIGH);
+  tone(9,2000,500);
+  one.move(getVelocidade(dados)*-1,getVelocidade(dados)*-1);
+  Serial.println("Comando valido!");
+  Serial.print("Recuar velocidade ");
+  Serial.println(getVelocidade(dados));
+  vel=getVelocidade(dados);
+}
+
+void inverterSentido()
+{
+  if(frente==1)
+  {
+    one.stop();
+    one.move(40,-40);
+    delay(600);
+    Serial.println("Comando validado!");
+    Serial.print("Sentido invertido");  
+    tone(9,2000,500);
+    one.move(vel,vel);
+    Serial.print("Em frente velocidade ");
+    Serial.println(vel);
+  }
+}
+
+void parar()
+{
+    digitalWrite(led,LOW);
+    one.stop();
+    Serial.println("Comando valido!");
+    Serial.println("Parar");
+}
+
+void virarDireita()
+{
+    if(frente==true)
+    {
+      one.move(15,-10);
+      Serial.println("Comando valido!");
+      Serial.print("Direita ");
+      delay(500);
+      tone(9,2000,500);
+      one.move(vel,vel);
+      Serial.print("Em frente velocidade ");
+      Serial.println(vel);
+    }
+    if(recua==true)
+    {
+      one.move(-10,15);
+      Serial.println("Comando validado!");
+      Serial.print("Direita ");
+      delay(500);
+      tone(9,2000,500);
+      one.move(-vel,-vel);
+      Serial.print("Recua velocidade ");
+      Serial.println(-vel);
+    }
+}
+
+void virarEsquerda()
+{
+   if(frente==true)
+   {
+      one.move(-10,15);
+      Serial.println("Comando valido!");
+      Serial.print("Direita ");
+      delay(500);
+      tone(9,2000,500);
+      one.move(vel,vel);
+      Serial.print("Em frente velocidade ");
+      Serial.println(vel);
+   }
+   if(recua==true)
+   {
+      one.move(15,-10);
+      Serial.println("Comando validado!");
+      Serial.print("Direita ");
+      delay(500);
+      tone(9,2000,500);
+      one.move(-vel,-vel);
+      Serial.print("Recua velocidade ");
+      Serial.println(-vel);
+   } 
+}
+
