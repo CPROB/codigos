@@ -1,15 +1,12 @@
-#include <AlphaBot.h>
-
 #include <BnrOneA.h>
 #include <EEPROM.h>
 #include <SPI.h>
-
 BnrOneA one;
 
 #define led 5
 #define SSPIN 2
 
-boolean validaDados (String dados);
+String toneDuration = "";
 
 void setup() {
 
@@ -19,19 +16,16 @@ void setup() {
   one.stop();
 }
 
-void loop() 
-{
+void loop() {
+
   String dados = "";
-  while (Serial.available()) {
+  if (Serial.available()) {
     dados = Serial.readString();
     Serial.print("String recebida:\n");
   }
-  if(validaDados(dados))
-  {
-    Serial.println("String validada");
-  }
-  
-  /*String comando = (String) dados.charAt(0) + (String) dados.charAt(1);
+
+  String command = (String) dados.charAt(0) + (String) dados.charAt(1);
+
   char cmd = dados.charAt(0);
   char space = dados.charAt(1);
   String vel = (String) dados.charAt(2) + (String) dados.charAt(3);
@@ -82,26 +76,5 @@ void loop()
       (String)dados.charAt(5);
     Serial.println("Duration set to: " + toneDuration);
   }
-}*/
 }
-/****************************************************************/
-boolean validaDados(String dados)
-{
-  boolean valida=false;
-  char comandos[6] = {'F','B','S','L','R'};
-  char aux[5] = {'+','-',' ','\n'};
-  for (int i=0;i<5;i++)
-  {
-    if(dados.charAt(0)==comandos[i] && dados)
-    {
-      for(int j=0;j<4;j++)
-      {
-        if(dados.charAt(1)==aux[j])
-          valida=true;
-      }
-    }
-    else
-      valida=false;
-  }
-  return valida;
-}
+
